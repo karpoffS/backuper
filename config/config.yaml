@@ -27,8 +27,10 @@ backuper:
 #        project: '/var/www/' # если указать только путь, то будет использован default_compressor
 
 uploader:
+    default_connection: main
     connections:
-        ftp: # Или sftp
+        main: # Простое именование
+            type: 'ftp' # or sftp
             host: xxx.xxx.xxx.xxx
             user: 'user'
             password: 'passwd'
