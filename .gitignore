@@ -1,0 +1,12 @@
+/**/.DS_Store
+/.DS_Store
+/vendor/
+/.idea
+/backups
+/var/*
+!/var/cache
+/var/cache/*
+!var/cache/.gitkeep
+!/var/logs
+/var/logs/*
+!var/logs/.gitkeep

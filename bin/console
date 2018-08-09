@@ -1,0 +1,29 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__.'/../bootstrap.php';
+
+use Symfony\Component\Console\Application;
+
+// Создаём консольную команду
+$app = new Application('Backup tools', 'v1.0.0');
+
+$logger = new Utils\Logging(
+	[
+		'path' => logPath,
+        'format' => CONFIG['logger']['format']
+	]
+);
+
+// Регистрируем команды
+$app->addCommands(
+	[
+		new \Command\BackupStartCommand(
+			CONFIG ?? [],
+			$logger->getMonologLoggerByCommandName('backuper')
+		),
+        
+	]
+);
+
+return $app->run();

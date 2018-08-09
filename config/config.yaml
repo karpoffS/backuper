@@ -1,0 +1,37 @@
+global:
+    backup_path: './backups/'
+
+logger:
+    log_path: 'var/logs/' # Если путь начинается с / то считается абсолютным
+    format: "[%datetime%] %channel%.%level_name%: %message% %context% %extra% \n"
+
+backuper:
+    format_date: 'Y-m-d\TH:i:sP' # Обязательный параметр
+    default_compressor: 'bz2' # Этот параметр не обязателен, по умолчанию tar
+    ignoreFailedRead: true # По умолчанию false, если включён даннй парамер в true то в архив попадут только дступные файлы на чтение
+    folders: # Обязателен
+        configs: # Развёрнутая запись
+#            ignoreFailedRead: true # не обязательный параметр
+            compressor: 'gz' # В развёрнутом не обязательный, по умолчанию будет использован default_compressor
+            path: '/etc' # В развёрнутом обязательный параметр
+            include: # Не обязательный параметр, если указан будут упакованы только перечисленные папки и файлы
+                - 'php' # Можно определять ШАБЛОНОМ
+                - 'phpmyadmin'
+                - 'apache2'
+                - 'nginx'
+                - 'mysql'
+                - 'rabbitmq'
+                - 'mongodb.conf'
+            exclude: # Не обязательный параметр
+                - 'skel' # Можно определять ШАБЛОНОМ
+#        project: '/var/www/' # если указать только путь, то будет использован default_compressor
+
+uploader:
+    connections:
+        ftp: # Или sftp
+            host: xxx.xxx.xxx.xxx
+            user: 'user'
+            password: 'passwd'
+            path: '/srv/db/01/'
+            port: ~
+            passive: true # для sftp этот параметр лишний
