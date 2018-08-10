@@ -35,10 +35,9 @@ interface CompressorInterface
 	public function addExclude(string $path);
 
 	/**
-	 * @param string $archivePath
-	 * @return mixed
+	 * @return string
 	 */
-	public function compile(string $archivePath);
+	public function compile();
 
 	/**
 	 * @return array

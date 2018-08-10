@@ -14,13 +14,18 @@ class Compressor  implements CompressorInterface
 	protected $template = 'tar %s %s %s %s';
 
 	/**
+	 * @var string
+	 */
+	protected $fileName;
+
+	/**
 	 * Directry separator short format
 	 */
 	const DS = DIRECTORY_SEPARATOR;
 
-    /**
-     * @var null|string
-     */
+	/**
+	 * @var null|string
+	 */
     protected $type = null;
 
     /**
@@ -32,6 +37,11 @@ class Compressor  implements CompressorInterface
 	 * @var  string
 	 */
 	private $path;
+
+	/**
+	 * @var  string
+	 */
+	private $savePath;
 
 	/**
 	 * @var array
@@ -48,10 +58,62 @@ class Compressor  implements CompressorInterface
 	 *
 	 * @param string $type
 	 */
-    public function __construct(string $type)
+    public function __construct(string $fileName, string $type)
     {
         $this->type = $type;
+        $this->fileName = $fileName;
     }
+
+	public function setSavePath(string $path)
+	{
+		return $this->savePath = $path;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getFullFileName()
+	{
+		if ($this->type === CompressorInterface::COMPRESSOR_GZIP){
+			return implode(
+				'.',
+				[
+					$this->fileName,
+					CompressorInterface::COMPRESSOR_TAR,
+					CompressorInterface::COMPRESSOR_GZIP
+				]
+			);
+		} elseif ($this->type === CompressorInterface::COMPRESSOR_BZIP2){
+			return implode(
+				'.',
+				[
+					$this->fileName,
+					CompressorInterface::COMPRESSOR_TAR,
+					CompressorInterface::COMPRESSOR_BZIP2
+				]
+			);
+		} elseif ($this->type === CompressorInterface::COMPRESSOR_LZMA){
+			return implode(
+				'.',
+				[
+					$this->fileName,
+					CompressorInterface::COMPRESSOR_TAR,
+					CompressorInterface::COMPRESSOR_LZMA
+				]
+			);
+		}
+		return implode('.',[$this->fileName, CompressorInterface::COMPRESSOR_TAR]);
+	}
+
+	public function getFullPathForSaveFileName(){
+		return implode(
+			DIRECTORY_SEPARATOR,
+			[
+				rtrim($this->savePath, DIRECTORY_SEPARATOR),
+				$this->getFullFileName()
+			]
+		);
+	}
 
 	/**
 	 * @param bool $bool
@@ -86,10 +148,9 @@ class Compressor  implements CompressorInterface
 	}
 
 	/**
-	 * @param string $archivePath
 	 * @return string
 	 */
-	public function compile(string $archivePath)
+	public function compile()
 	{
 		// Получаем пути для включения архивации
 		$includes = $this->generateIncludes();
@@ -98,38 +159,14 @@ class Compressor  implements CompressorInterface
 		$excludes = $this->generateExcludes();
 
 		$compress = '-cvf';
-		$archiveFullPath = implode('.',[$archivePath, CompressorInterface::COMPRESSOR_TAR]);
+		$archiveFullPath = $this->getFullPathForSaveFileName();
 
 		if ($this->type === CompressorInterface::COMPRESSOR_GZIP){
 			$compress = '-cvzf';
-			$archiveFullPath = implode(
-				'.',
-				[
-					$archivePath,
-					CompressorInterface::COMPRESSOR_TAR,
-					CompressorInterface::COMPRESSOR_GZIP
-				]
-			);
 		} elseif ($this->type === CompressorInterface::COMPRESSOR_BZIP2){
 			$compress = '-cvjf';
-			$archiveFullPath = implode(
-				'.',
-				[
-					$archivePath,
-					CompressorInterface::COMPRESSOR_TAR,
-					CompressorInterface::COMPRESSOR_BZIP2
-				]
-			);
 		} elseif ($this->type === CompressorInterface::COMPRESSOR_LZMA){
 			$compress = '-cvf --lzma';
-			$archiveFullPath = implode(
-				'.',
-				[
-					$archivePath,
-					CompressorInterface::COMPRESSOR_TAR,
-					CompressorInterface::COMPRESSOR_LZMA
-				]
-			);
 		}
 
 		$cmd = sprintf($this->template, $compress, '"'.$archiveFullPath.'"', $includes, $excludes);

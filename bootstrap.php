@@ -5,26 +5,14 @@ ini_set('display_errors', 0);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+define('BASE_DIR', __DIR__);
+
 // Подключаем загрузку переменных
-$dotenv = new \Symfony\Component\Dotenv\Dotenv();
-$dotenv->load(__DIR__.'/.env');
+(new \Symfony\Component\Dotenv\Dotenv())->load(__DIR__.'/.env');
 
-// Генерируем путь к конфигурационному файлу
-if(substr(getenv('CONFIG_PATH'), 0,1) === DIRECTORY_SEPARATOR){
-	$configPath = getenv('CONFIG_PATH');
-} else {
-	if(substr(getenv('CONFIG_PATH'), 0,1) === '.'){
-		$configPath  = ltrim(getenv('CONFIG_PATH'), '.');
-
-		if(substr($configPath, 0,1) === DIRECTORY_SEPARATOR){
-			$configPath = __DIR__ . $configPath;
-		} else {
-			$configPath = __DIR__ . $configPath;
-		}
-	} else {
-		$configPath = getenv('CONFIG_PATH');
-	}
-}
+// Генерируем пути
+$configPath = \Utils\HelperFunctions::generatePath(getenv('CONFIG_PATH'));
+define('BACKUP_PATH',  \Utils\HelperFunctions::generatePath(getenv('BACKUP_PATH')));
 
 // Если файла нету
 if(!file_exists($configPath)){
@@ -35,23 +23,9 @@ if(!file_exists($configPath)){
 }
 
 // Загружаем общий конфиг
-define(
-	'CONFIG',
-	\Symfony\Component\Yaml\Yaml::parseFile($configPath)
-);
+define('CONFIG',  \Symfony\Component\Yaml\Yaml::parseFile($configPath));
 unset($configPath);
 
-if(substr(CONFIG['logger']['log_path'], 0,1) === DIRECTORY_SEPARATOR){
-	define(
-		'logPath',
-		CONFIG['logger']['log_path']
-	);
-} else {
-	define(
-		'logPath',
-		implode(
-			DIRECTORY_SEPARATOR,
-			[__DIR__ , CONFIG['logger']['log_path']]
-		)
-	);
-}
+$logger = new Utils\Logging([ 'path' => \Utils\HelperFunctions::generatePath(getenv('LOG_PATH')), 'format' => CONFIG['logger']['format']]);
+
+define('CACHE_PATH', \Utils\HelperFunctions::generatePath(getenv('CACHE_PATH')));

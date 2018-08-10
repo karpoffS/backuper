@@ -11,6 +11,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Finder\Finder;
+use Utils\ExchangeData;
+use Utils\HelperFunctions;
 
 /**
  * Class BackupStartCommand
@@ -39,6 +42,11 @@ class BackupStartCommand extends Command
 	private $logger;
 
 	/**
+	 * @var Finder
+	 */
+	private $finder;
+
+	/**
 	 * @var array
 	 */
 	protected $defaultItem = [
@@ -58,9 +66,10 @@ class BackupStartCommand extends Command
 	 */
 	public function __construct(array $config, LoggerInterface $logger, string $name = null)
 	{
+		$this->finder = new Finder();
 		$this->logger = $logger;
 		$this->config = $config['backuper'];
-		$this->backupPath = $config['global']['backup_path'];
+		$this->backupPath = BACKUP_PATH;
 
 		if(isset($config['backuper']['ignoreFailedRead'])){
 			$this->config['ignoreFailedRead'] = (bool) $config['backuper']['ignoreFailedRead'];
@@ -101,31 +110,45 @@ class BackupStartCommand extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
+		$io = new SymfonyStyle($input, $output);
 		try{
-			$io = new SymfonyStyle($input, $output);
 
 			// Если есть что что бекапить
 			if(isset($this->config['folders']) && is_array($this->config['folders'])){
 
+				// Загружаем предыдущие данные
+				$exchange = new ExchangeData(CACHE_PATH);
+
 				$folders = $this->config['folders'];
 				foreach ($folders as $name=>$folder) {
-
+					
 					// Получаем текущие настройки
 					if(is_array($folder)){
 						$settings = $this->getItemSettings($folder);
 					} else {
 						$settings = $this->getItemSettings([ 'path' => $folder]);
 					}
-					
-					$fileName = implode(DIRECTORY_SEPARATOR,
-							[ rtrim($this->backupPath, DIRECTORY_SEPARATOR), $name ]
-						).'-'.(new \DateTime('now'))->format($this->config['format_date']);
 
+					if(isset($this->config['cleanBackups'])){
+						$this->finder->in($this->backupPath)->files()
+							->name($name.'*')->date($this->config['cleanBackups']);
+
+						foreach ($this->finder as $file) {
+							if(unlink($file->getRealPath())){
+								$this->logger->notice(
+									'[Delete]: Older backup file '. $file->getRelativePathname() .
+									' in directory '. $file->getPath()
+								);
+							}
+						}
+					}
+					
 					// Создаём объект сборшика данных
 					$archive = new Archivator(
-						$fileName,
+						$name .'-'.(new \DateTime('now'))->format($this->config['format_date']),
 						$settings['compressor']
 					);
+					$archive->setSavePath($this->backupPath);
 					$archive->setPath(is_array($folder) ? $folder['path'] : $folder);
 					$archive->setIgnoreFailedRead($settings['ignoreFailedRead']);
 
@@ -152,6 +175,7 @@ class BackupStartCommand extends Command
 					];
 
 					$cmd = $archive->compile();
+					dump($cmd);
 					$this->logger->info('[Command]: '.$cmd);
 					$process = new Process($cmd);
 					$process->run(function ($type, $buffer) use(&$stats) {
@@ -176,6 +200,16 @@ class BackupStartCommand extends Command
 						throw new ProcessFailedException($process);
 					}
 
+					$exchange->addCurrentFile(
+						array_merge(
+							HelperFunctions::hash_file_multi(
+								['md5', 'sha1', 'sha256'],
+								$archive->getFullPathForSaveFileName()
+							),
+							['stats' =>  $stats ]
+						)
+					);
+
 					// Результат работы
 					$this->logger->emergency(
 						sprintf(
@@ -185,6 +219,8 @@ class BackupStartCommand extends Command
 						)
 					);
 				}
+
+				$exchange->saveData();
 			} else {
 				throw new \Exception('Отсутвуют цели для резервного копирования', 125);
 			}

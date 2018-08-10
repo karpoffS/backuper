@@ -14,11 +14,6 @@ use Interfaces\CompressorInterface;
 class Archivator implements ArchivatorInterface
 {
 	/**
-	 * @var  string
-	 */
-	private $fileName;
-
-	/**
 	 * @var  CompressorInterface
 	 */
 	private $compressor;
@@ -30,8 +25,28 @@ class Archivator implements ArchivatorInterface
 	 */
 	public function __construct(string $fileName, string $ext)
 	{
-		$this->fileName = $fileName;
-		$this->compressor = new Compressor($ext);
+		$this->compressor = new Compressor($fileName, $ext);
+	}
+
+	/**
+	 * @param string $path
+	 * @return mixed
+	 */
+	public function setSavePath(string $path)
+	{
+		return $this->compressor->setSavePath($path);
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getFullFileName()
+	{
+		return $this->compressor->getFullFileName();
+	}
+
+	public function getFullPathForSaveFileName(){
+		return $this->compressor->getFullPathForSaveFileName();
 	}
 
 	public function setIgnoreFailedRead(bool $bool)
@@ -68,7 +83,7 @@ class Archivator implements ArchivatorInterface
 	 */
 	public function compile()
 	{
-		return $this->compressor->compile($this->fileName);
+		return $this->compressor->compile();
 	}
 
 	public static function getSupported(): array
