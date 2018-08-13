@@ -21,6 +21,11 @@ class ExchangeData
 	/**
 	 * @var array 
 	 */
+	private $current = [];
+
+	/**
+	 * @var array 
+	 */
 	private $data =  [
 		self::KEY_CURRENT => [],
 		self::KEY_PREVIOUS => []
@@ -43,17 +48,8 @@ class ExchangeData
 
 		if(file_exists($this->filedb)){
 			if(is_array($readDate = json_decode(file_get_contents($this->filedb), true))){
-				dump($readDate);
 				$this->data = array_merge($this->data, $readDate);
 			}
-		}
-
-		if(count($this->data[self::KEY_CURRENT]) > 0){
-			$this->data[self::KEY_PREVIOUS] = array_merge(
-				$this->data[self::KEY_CURRENT],
-				$this->data[self::KEY_PREVIOUS]
-			) ;
-			$this->data[self::KEY_CURRENT] = [];
 		}
 	}
 
@@ -68,7 +64,7 @@ class ExchangeData
 	/**
 	 * @return mixed
 	 */
-	public function getCurrentFiles()
+	public function getUploadFiles()
 	{
 		return $this->data[self::KEY_CURRENT];
 	}
@@ -78,7 +74,7 @@ class ExchangeData
 	 */
 	public function addCurrentFile(array $file)
 	{
-		$this->data[self::KEY_CURRENT][] = $file;
+		$this->current[] = $file;
 	}
 
 	/**
@@ -86,6 +82,13 @@ class ExchangeData
 	 */
 	public function saveData()
 	{
+		if(count($this->current) > 0){
+			$this->data[self::KEY_PREVIOUS] = array_merge(
+				$this->data[self::KEY_CURRENT],
+				$this->data[self::KEY_PREVIOUS]
+			) ;
+			$this->data[self::KEY_CURRENT] = $this->current;
+		}
 		return file_put_contents($this->filedb, json_encode($this->data, JSON_PRETTY_PRINT) );
 	}
 }
