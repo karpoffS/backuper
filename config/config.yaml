@@ -2,10 +2,10 @@ logger:
     format: "[%datetime%] %channel%.%level_name%: %message% %context% %extra% \n"
 
 backuper:
-    format_date: 'Y-m-d\TH:i:sP' # Обязательный параметр
+    format_date: 'Y-m-d\TH:i:sP' # Обязательный параметр  http://php.net/manual/ru/class.datetime.php#datetime.constants.atom
     default_compressor: 'bz2' # Этот параметр не обязателен, по умолчанию tar
     ignoreFailedRead: true # По умолчанию false, если включён данный парамер в true, то в архив попадут только доступные файлы
-#    cleanBackups: 'until 3 days ago' # Формат записи см. https://symfony.com/doc/current/components/finder.html#file-date
+    cleanBackups: 'until 3 days ago' # Формат записи см. https://symfony.com/doc/current/components/finder.html#file-date
     folders: # Обязателен
         configs: # Развёрнутая запись
             ignoreFailedRead: true # не обязательный параметр
@@ -21,16 +21,18 @@ backuper:
                 - 'mongodb.conf'
             exclude: # Не обязательный параметр
                 - 'skel' # Можно определять ШАБЛОНОМ
-        project: '/var/www/' # если указать только путь, то будет использован default_compressor
+#        project: '/var/www/' # если указать только путь, то будет использован default_compressor
 
 uploader:
-    default_connection: main
     connections:
-        main: # Простое именование
+        ihor: # Простое именование
+            cleanBackups: 'until 3 days ago' # Формат записи см. https://symfony.com/doc/current/components/finder.html#file-date
             type: 'ftp' # or sftp
-            host: xxx.xxx.xxx.xxx
-            user: 'user'
-            password: 'passwd'
-            path: '/srv/db/01/'
+            host: '185.5.248.183'
+            username: 'ih1131701'
+            password: 'T1gEnCK10kTu'
+            root: '/srv/db'
+            path: '02/'
+            timeout: ~  # только для ftp
             port: ~
-            passive: true # для sftp этот параметр лишний
+            passive: true # только для ftp

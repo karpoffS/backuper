@@ -15,7 +15,10 @@ $app->addCommands(
 			CONFIG ?? [],
 			$logger->getMonologLoggerByCommandName('backuper')
 		),
-        
+        new \Command\UploadStartCommand(
+                CONFIG ?? [],
+                $logger->getMonologLoggerByCommandName('uploader')
+        )
 	]
 );
 
