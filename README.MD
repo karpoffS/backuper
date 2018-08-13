@@ -37,7 +37,7 @@ backuper:
                     - 'ls -alh  /path/to/mysqldump/'
             ignoreFailedRead: true # не обязательный параметр
             compressor: 'lzma' # В развёрнутом не обязательный, по умолчанию будет использован default_compressor
-            path: '/home/sergey/Projects/mysqldump/*' # В развёрнутом обязательный параметр
+            path: '/path/to/mysqldump/' # В развёрнутом обязательный параметр
 
         configs: # Развёрнутая запись
             ignoreFailedRead: true # не обязательный параметр
