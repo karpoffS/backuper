@@ -28,7 +28,6 @@ class HelperFunctions
 				$fullPath = implode(DIRECTORY_SEPARATOR, [BASE_DIR , $path]);
 			}
 		}
-		 dump($fullPath);
 		return  $fullPath;
 	}
 
