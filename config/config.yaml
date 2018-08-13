@@ -37,9 +37,9 @@ uploader:
         ihor: # Простое именование
             cleanBackups: 'until 3 days ago' # Формат записи см. https://symfony.com/doc/current/components/finder.html#file-date
             type: 'ftp' # or sftp
-            host: '185.5.248.183'
-            username: 'ih1131701'
-            password: 'T1gEnCK10kTu'
+            host: 'xxx.xxx.xxx.xxx'
+            username: 'username'
+            password: 'password'
             root: '/srv/db'
             path: '02/'
             timeout: ~  # только для ftp
