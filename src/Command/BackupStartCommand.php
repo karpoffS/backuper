@@ -205,6 +205,7 @@ class BackupStartCommand extends Command
 
 					$exchange->addCurrentFile(
 						array_merge(
+							['mask' => $name],
 							HelperFunctions::hash_file_multi(
 								['md5', 'sha1', 'sha256'],
 								$archive->getFullPathForSaveFileName()
