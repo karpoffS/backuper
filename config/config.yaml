@@ -7,6 +7,15 @@ backuper:
     ignoreFailedRead: true # По умолчанию false, если включён данный парамер в true, то в архив попадут только доступные файлы
     cleanBackups: 'until 3 days ago' # Формат записи см. https://symfony.com/doc/current/components/finder.html#file-date
     folders: # Обязателен
+        databases:
+            commands:
+                before:
+                    - 'mysqldump -u root -pPASSWD fly_test > /path/to/mysqldump/fly_test.sql ; sync ; sync ; sync'
+                    - 'ls -alh  /path/to/mysqldump/'
+            ignoreFailedRead: true # не обязательный параметр
+            compressor: 'lzma' # В развёрнутом не обязательный, по умолчанию будет использован default_compressor
+            path: '/home/sergey/Projects/mysqldump/*' # В развёрнутом обязательный параметр
+
         configs: # Развёрнутая запись
             ignoreFailedRead: true # не обязательный параметр
             compressor: 'gz' # В развёрнутом не обязательный, по умолчанию будет использован default_compressor

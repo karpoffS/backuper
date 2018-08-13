@@ -131,6 +131,16 @@ class BackupStartCommand extends Command
 					} else {
 						$settings = $this->getItemSettings([ 'path' => $item]);
 					}
+					dump($settings);
+//					exit(1);
+
+					if(isset($settings['commands'])){
+						if(isset($settings['commands']['before'])){
+							foreach ($settings['commands']['before'] as $command){
+								$this->runExternalCommand($command, ['Command','Before']);
+							}
+						}
+					}
 
 					if(isset($this->config['cleanBackups'])){
 						$this->finder->in($this->backupPath)->files()
@@ -225,9 +235,20 @@ class BackupStartCommand extends Command
 							$stats['folders']
 						)
 					);
+
+					if(isset($settings['commands'])){
+						if(isset($settings['commands']['after'])){
+							foreach ($settings['commands']['after'] as $command){
+								$this->runExternalCommand($command, ['Command','After']);
+							}
+						}
+					}
 				}
 
 				$exchange->saveData();
+
+
+
 			} else {
 				throw new \Exception('Отсутвуют цели для резервного копирования', 125);
 			}
@@ -238,6 +259,34 @@ class BackupStartCommand extends Command
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Выполнение внешних команд
+	 * 
+	 * @param string $command
+	 * @param array  $context
+	 */
+	private function runExternalCommand(string $command, array $context)
+	{
+		$context = implode('', array_map(function ($s){return '['.$s.']';}, $context));
+		$process = new Process($command);
+		$process->run(function ($type, $buffer) use($context) {
+			if (Process::ERR === $type) {
+				$this->logger->warning($context.': '. $buffer);
+			} else {
+				$strings = explode(PHP_EOL, $buffer);
+				foreach ($strings as $string){
+					if(mb_strlen($string)){
+						$this->logger->info($context.': '. $string);
+					}
+				}
+			}
+		});
+
+		if (!$process->isSuccessful()) {
+			throw new ProcessFailedException($process);
+		}
 	}
 
 	/**
