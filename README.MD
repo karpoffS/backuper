@@ -13,9 +13,9 @@ git clone ssh://git@gitlab.magic-egg.net:2224/karpov/backuper.git
 Пример файла `.env` в `.env.dist`:
 ```dotenv
 CONFIG_PATH=config/config.yaml # Указываем на конфигурационный файл, его можно расположить где вам удобно или в подпапке проекта или в /etc/backuper/config.yaml
-BACKUP_PATH=backups # Директория или mountpoint куда складывать ваши локальные резервные файлы
-CACHE_PATH=var/cache  # Директория временного хранения файла данных обема информацие между внутреними скриптами
-LOG_PATH=var/logs # Директория для хранения лога выполения резервного копирования и выгрузки на внешние источники
+BACKUP_PATH=backups # Директория или mountpoint куда сохранять ваши локальные резервные копии
+CACHE_PATH=var/cache  # Директория временного хранения файла данных обмена информацией между внутреними скриптами
+LOG_PATH=var/logs # Директория для хранения истории выполения резервного копирования и выгрузки на внешние источники
 ``` 
 
 * Основной конфигурационный файл в формате **yaml**, пример в `config/config.yaml`:
@@ -31,8 +31,8 @@ backuper:
     cleanBackups: 'until 3 days ago' # Формат записи см. https://symfony.com/doc/current/components/finder.html#file-date
     folders: # Обязателен
         databases:
-            commands:
-                before:
+            commands:  # Задаём команды которые могут выполнятся до ключ before так и после ключ after
+                before: # Консольные команды выполняемые до основной команды
                     - 'mysqldump -u root -pPASSWD fly_test > /path/to/mysqldump/fly_test.sql ; sync ; sync ; sync'
                     - 'ls -alh  /path/to/mysqldump/'
             ignoreFailedRead: true # не обязательный параметр
@@ -53,11 +53,11 @@ backuper:
                 - 'mongodb.conf'
             exclude: # Не обязательный параметр
                 - 'skel' # Можно определять ШАБЛОНОМ
-#        project: '/var/www/' # если указать только путь, то будет использован default_compressor
+#        project: '/var/www/' # если указать только путь, то будут использованы default_compressor, cleanBackups и ignoreFailedRead из общих настроек
 
 uploader:
     connections:
-        ihor: # Простое именование
+        storage1: # Простое именование
             cleanBackups: 'until 3 days ago' # Формат записи см. https://symfony.com/doc/current/components/finder.html#file-date
             type: 'ftp' # or sftp
             host: 'xxx.xxx.xxx.xxx'
@@ -78,4 +78,4 @@ uploader:
 
 Так и общую команду которая сама запустит вышеприведённые:
 
-`bin/console app:start` - Запускает выполение разарвного копирования и последующей загрузки на внешние носители 
+`bin/console app:start` - Запускает выполение резервного копирования и последующей загрузки на внешние носители 
