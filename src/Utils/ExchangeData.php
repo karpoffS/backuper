@@ -77,6 +77,12 @@ class ExchangeData
 		$this->current[] = $file;
 	}
 
+	public function clearUploadedFilesAndSave()
+	{
+		$this->data[self::KEY_CURRENT] = [];
+		return $this->saveData();
+	}
+
 	/**
 	 * @return bool|int
 	 */
