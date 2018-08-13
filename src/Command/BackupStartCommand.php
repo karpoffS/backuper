@@ -120,13 +120,16 @@ class BackupStartCommand extends Command
 				$exchange = new ExchangeData(CACHE_PATH);
 
 				$folders = $this->config['folders'];
-				foreach ($folders as $name=>$folder) {
-					
+				foreach ($folders as $name=>$item) {
+
+					$nowDate = new \DateTime('now');
+					$humanDate = $nowDate->format($this->config['format_date']);
+
 					// Получаем текущие настройки
-					if(is_array($folder)){
-						$settings = $this->getItemSettings($folder);
+					if(is_array($item)){
+						$settings = $this->getItemSettings($item);
 					} else {
-						$settings = $this->getItemSettings([ 'path' => $folder]);
+						$settings = $this->getItemSettings([ 'path' => $item]);
 					}
 
 					if(isset($this->config['cleanBackups'])){
@@ -145,25 +148,25 @@ class BackupStartCommand extends Command
 					
 					// Создаём объект сборшика данных
 					$archive = new Archivator(
-						$name .'-'.(new \DateTime('now'))->format($this->config['format_date']),
+						$name .'-'.$humanDate,
 						$settings['compressor']
 					);
 					$archive->setSavePath($this->backupPath);
-					$archive->setPath(is_array($folder) ? $folder['path'] : $folder);
+					$archive->setPath($settings['path']);
 					$archive->setIgnoreFailedRead($settings['ignoreFailedRead']);
 
 					if(isset($settings['include'])){
-						foreach($settings['include'] as $item){
-							if(is_string($item)){
-								$archive->addInclude($item);
+						foreach($settings['include'] as $include){
+							if(is_string($include)){
+								$archive->addInclude($include);
 							}
 						}
 					}
 					
 					if(isset($settings['exclude'])){
-						foreach($settings['exclude'] as $item){
-							if(is_string($item)){
-								$archive->addExclude($item);
+						foreach($settings['exclude'] as $exclude){
+							if(is_string($exclude)){
+								$archive->addExclude($exclude);
 							}
 						}
 					}
@@ -206,7 +209,9 @@ class BackupStartCommand extends Command
 								['md5', 'sha1', 'sha256'],
 								$archive->getFullPathForSaveFileName()
 							),
-							['stats' =>  $stats ]
+							[ 'unix_timestamp' => $nowDate->getTimestamp()],
+							[ 'human_date' => $humanDate ],
+							[ 'stats' =>  $stats ]
 						)
 					);
 
