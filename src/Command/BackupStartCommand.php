@@ -3,7 +3,7 @@
 namespace Command;
 
 use Interfaces\CompressorInterface;
-use Library\Archivator;
+use Library\Compressor;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -81,7 +81,7 @@ class BackupStartCommand extends Command
 			if($this->config['default_compressor'] === null){
 				$this->defaultCompressor = CompressorInterface::COMPRESSOR_TAR;
 			} else {
-				if(!in_array($this->config['default_compressor'], Archivator::getSupported())){
+				if(!in_array($this->config['default_compressor'], Compressor::getSupported())){
 					$this->logger->info(
 						'Compressor is not supported',
 						['default_compressor' => $this->config['default_compressor'] ]
@@ -147,7 +147,7 @@ class BackupStartCommand extends Command
 					}
 					
 					// Создаём объект сборшика данных
-					$archive = new Archivator(
+					$archive = new Compressor(
 						$name .'-'.$humanDate,
 						$settings['compressor']
 					);
@@ -205,11 +205,12 @@ class BackupStartCommand extends Command
 
 					$exchange->addCurrentFile(
 						array_merge(
-							['mask' => $name],
+							[ 'mask' => $name ],
 							HelperFunctions::hash_file_multi(
 								['md5', 'sha1', 'sha256'],
 								$archive->getFullPathForSaveFileName()
 							),
+							[ 'ext' => $archive->getExtFile()],
 							[ 'unix_timestamp' => $nowDate->getTimestamp()],
 							[ 'human_date' => $humanDate ],
 							[ 'stats' =>  $stats ]
@@ -267,12 +268,12 @@ class BackupStartCommand extends Command
 	 */
 	protected function getSupportedCompressor($compressor, array $context = [])
 	{
-		if(in_array($compressor, Archivator::getSupported())){
+		if(in_array($compressor, Compressor::getSupported())){
 			return $compressor;
 		} else {
 			$this->logger->warning(
 				'Compressor not supported, choice default compressor ('.$this->defaultCompressor.')',
-				$context ?? Archivator::getSupported()
+				$context ?? Compressor::getSupported()
 			);
 			return $this->defaultCompressor;
 		}

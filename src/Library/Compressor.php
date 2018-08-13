@@ -17,6 +17,11 @@ class Compressor  implements CompressorInterface
 	 * @var string
 	 */
 	protected $fileName;
+	
+	/**
+	 * @var string
+	 */
+	protected $extFile;
 
 	/**
 	 * Directry separator short format
@@ -72,33 +77,60 @@ class Compressor  implements CompressorInterface
 	/**
 	 * @return string
 	 */
+	public function getExtFile()
+	{
+		return $this->extFile;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getFullFileName()
 	{
 		if ($this->type === CompressorInterface::COMPRESSOR_GZIP){
-			return implode(
+
+			$this->extFile = implode(
 				'.',
 				[
-					$this->fileName,
 					CompressorInterface::COMPRESSOR_TAR,
 					CompressorInterface::COMPRESSOR_GZIP
 				]
 			);
-		} elseif ($this->type === CompressorInterface::COMPRESSOR_BZIP2){
 			return implode(
 				'.',
 				[
 					$this->fileName,
+					$this->extFile
+				]
+			);
+		} elseif ($this->type === CompressorInterface::COMPRESSOR_BZIP2){
+			$this->extFile = implode(
+				'.',
+				[
 					CompressorInterface::COMPRESSOR_TAR,
 					CompressorInterface::COMPRESSOR_BZIP2
 				]
 			);
-		} elseif ($this->type === CompressorInterface::COMPRESSOR_LZMA){
 			return implode(
 				'.',
 				[
 					$this->fileName,
+					$this->extFile
+				]
+			);
+		} elseif ($this->type === CompressorInterface::COMPRESSOR_LZMA){
+			$this->extFile = implode(
+				'.',
+				[
 					CompressorInterface::COMPRESSOR_TAR,
 					CompressorInterface::COMPRESSOR_LZMA
+				]
+			);
+			return implode(
+				'.',
+				[
+					$this->fileName,
+					$this->extFile
 				]
 			);
 		}
