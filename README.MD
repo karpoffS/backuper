@@ -1,21 +1,37 @@
 # Утилита резервного копирования
 
-Для работы пакет требуется **PHP** cli не ниже 7.1 и composer установленый в систему или локально в проект.
- 
-Установка производится стандартными средствами **GIT**.
+Для работы пакеты требуется **PHP** cli не ниже 7.1 и **Сomposer** установленый в систему или локально в проект.
 
 ```bash
-git clone ssh://git@gitlab.magic-egg.net:2224/karpov/backuper.git
+sudo apt install composer php-cli
+```
+
+А так же установим необходимые расширения:
+```bash
+sudo apt install php-libsodium php-gmp php-zip php-intl
+```
+
+Создадим рабочие директории:
+```bash
+sudo mkdir /etc/backuper
+sudo mkdir /var/log/backuper
+sudo mkdir /var/cache/backuper
+sudo mkdir /backups
+```
+
+Установка комплекта ПО производится стандартными средствами **GIT**.
+```bash
+git clone http://url_to/backuper.git
 ```
 
 * Настройка производится в двух файлах `.env` и `config.yaml`.
 
 Пример файла `.env` в `.env.dist`:
 ```dotenv
-CONFIG_PATH=config/config.yaml # Указываем на конфигурационный файл, его можно расположить где вам удобно или в подпапке проекта или в /etc/backuper/config.yaml
-BACKUP_PATH=backups # Директория или mountpoint куда сохранять ваши локальные резервные копии
-CACHE_PATH=var/cache  # Директория временного хранения файла данных обмена информацией между внутреними скриптами
-LOG_PATH=var/logs # Директория для хранения истории выполения резервного копирования и выгрузки на внешние источники
+CONFIG_PATH=/etc/backuper/config.yaml # Указываем на конфигурационный файл, его можно расположить где вам удобно
+BACKUP_PATH=/backups # Директория или mountpoint куда сохранять ваши локальные резервные копии
+CACHE_PATH=/var/cache/backuper  # Директория временного хранения файла данных обмена информацией между внутреними скриптами
+LOG_PATH=/var/log/backuper # Директория для хранения истории выполения резервного копирования и выгрузки на внешние источники
 ``` 
 
 * Основной конфигурационный файл в формате **yaml**, пример в `config/config.yaml`:
