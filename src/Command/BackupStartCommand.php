@@ -196,6 +196,8 @@ class BackupStartCommand extends Command
 						// Создаём процесс
 						$process = new Process($cmd);
 
+						// Отключаем лимит выполнения команды
+						$process->setTimeout(null);
 						// Запускаем процесс
 						$process->run(function ($type, $buffer) use(&$stats) {
 							if (Process::ERR === $type) {
@@ -281,6 +283,7 @@ class BackupStartCommand extends Command
 	{
 		$context = implode('', array_map(function ($s){return '['.$s.']';}, $context));
 		$process = new Process($command);
+		$process->setTimeout(null);
 		$process->run(function ($type, $buffer) use($context) {
 			if (Process::ERR === $type) {
 				$this->logger->warning($context.': '. $buffer);
