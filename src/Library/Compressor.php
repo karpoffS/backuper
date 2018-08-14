@@ -65,7 +65,7 @@ class Compressor  implements CompressorInterface
 	 */
     public function __construct(string $fileName, string $type)
     {
-        $this->type = $type;
+        $this->type = strtolower($type);
         $this->fileName = $fileName;
     }
 
