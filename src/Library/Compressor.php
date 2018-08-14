@@ -192,16 +192,19 @@ class Compressor  implements CompressorInterface
 
 		$compress = '-cvf';
 		$archiveFullPath = $this->getFullPathForSaveFileName();
+		$cmd = sprintf($this->template, $compress, '"'.$archiveFullPath.'"', $includes, $excludes);
 
 		if ($this->type === CompressorInterface::COMPRESSOR_GZIP){
 			$compress = '-cvzf';
+			$cmd = sprintf($this->template, $compress, '"'.$archiveFullPath.'"', $includes, $excludes);
 		} elseif ($this->type === CompressorInterface::COMPRESSOR_BZIP2){
 			$compress = '-cvjf';
+			$cmd = sprintf($this->template, $compress, '"'.$archiveFullPath.'"', $includes, $excludes);
 		} elseif ($this->type === CompressorInterface::COMPRESSOR_LZMA){
-			$compress = '-cvf --lzma';
+			$compress = '-cvf';
+			$cmd = sprintf('tar %s %s %s %s %s', $compress, '"'.$archiveFullPath.'"', '--lzma', $includes, $excludes);
 		}
 
-		$cmd = sprintf($this->template, $compress, '"'.$archiveFullPath.'"', $includes, $excludes);
 		$cmd = trim($cmd);
 		if($this->ignoreFailedRead){
 			$cmd.= ' --ignore-failed-read';

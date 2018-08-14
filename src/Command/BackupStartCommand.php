@@ -131,9 +131,8 @@ class BackupStartCommand extends Command
 					} else {
 						$settings = $this->getItemSettings([ 'path' => $item]);
 					}
-					dump($settings);
-//					exit(1);
 
+					// Если есть команды до выполнения основного задания
 					if(isset($settings['commands'])){
 						if(isset($settings['commands']['before'])){
 							foreach ($settings['commands']['before'] as $command){
@@ -142,6 +141,7 @@ class BackupStartCommand extends Command
 						}
 					}
 
+					// Если установлен флаг очистки старых резервных копий
 					if(isset($this->config['cleanBackups'])){
 						$this->finder->in($this->backupPath)->files()
 							->name($name.'*')->date($this->config['cleanBackups']);
@@ -187,55 +187,65 @@ class BackupStartCommand extends Command
 						'files' => 0
 					];
 
-					$cmd = $archive->compile();
-					dump($cmd);
-					$this->logger->info('[Command]: '.$cmd);
-					$process = new Process($cmd);
-					$process->run(function ($type, $buffer) use(&$stats) {
-						if (Process::ERR === $type) {
-							$this->logger->warning($buffer);
-						} else {
-							$paths = explode(PHP_EOL, $buffer);
-					        foreach ($paths as $path){
-					        	if(mb_strlen($path)){
-					        		if(substr($path, -1) === DIRECTORY_SEPARATOR){
-					        			$stats['folders']++;
-							        } else {
-								        $stats['files']++;
-							        }
-							        $this->logger->info('[Path]: '. $path);
-						        }
-					        }
-						}
-					});
+					// Если есть команда
+					if(strlen($cmd = $archive->compile())){
 
-					if (!$process->isSuccessful()) {
-						throw new ProcessFailedException($process);
+						// Запись в лог
+						$this->logger->info('[Command]: '.$cmd);
+
+						// Создаём процесс
+						$process = new Process($cmd);
+
+						// Запускаем процесс
+						$process->run(function ($type, $buffer) use(&$stats) {
+							if (Process::ERR === $type) {
+								$this->logger->warning($buffer);
+							} else {
+								$paths = explode(PHP_EOL, $buffer);
+								foreach ($paths as $path){
+									if(mb_strlen($path)){
+										if(substr($path, -1) === DIRECTORY_SEPARATOR){
+											$stats['folders']++;
+										} else {
+											$stats['files']++;
+										}
+										$this->logger->info('[Path]: '. $path);
+									}
+								}
+							}
+						});
+
+						// Если что-то пошло не так то сообщаем
+						if (!$process->isSuccessful()) {
+							throw new ProcessFailedException($process);
+						}
+
+						// Добовляем данные о новом файле
+						$exchange->addCurrentFile(
+							array_merge(
+								[ 'mask' => $name ], // маска имени файла
+								HelperFunctions::hash_file_multi(
+									['md5', 'sha1', 'sha256'],
+									$archive->getFullPathForSaveFileName()
+								),
+								[ 'ext' => $archive->getExtFile()],  // расширение файла
+								[ 'unix_timestamp' => $nowDate->getTimestamp()], // Время в unixtimestamp
+								[ 'human_date' => $humanDate ], // Время в формате \DateTime::ATOM
+								[ 'stats' =>  $stats ]  // Статистика
+							)
+						);
+
+						// Результат работы в лог
+						$this->logger->emergency(
+							sprintf(
+								'Зарезервировано файлов %d шт. в %d директориях.',
+								$stats['files'],
+								$stats['folders']
+							)
+						);
 					}
 
-					$exchange->addCurrentFile(
-						array_merge(
-							[ 'mask' => $name ],
-							HelperFunctions::hash_file_multi(
-								['md5', 'sha1', 'sha256'],
-								$archive->getFullPathForSaveFileName()
-							),
-							[ 'ext' => $archive->getExtFile()],
-							[ 'unix_timestamp' => $nowDate->getTimestamp()],
-							[ 'human_date' => $humanDate ],
-							[ 'stats' =>  $stats ]
-						)
-					);
-
-					// Результат работы
-					$this->logger->emergency(
-						sprintf(
-							'Зарезервировано файлов %d шт. в %d директориях.',
-							$stats['files'],
-							$stats['folders']
-						)
-					);
-
+					// Если есть команды после резервного копирвования
 					if(isset($settings['commands'])){
 						if(isset($settings['commands']['after'])){
 							foreach ($settings['commands']['after'] as $command){
