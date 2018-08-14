@@ -15,46 +15,21 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 class StartCommand extends Command
 {
-	/**
-	 * @var array
-	 */
-	private $config = [];
-
-	/**
-	 * @var string|null
-	 */
-	private $backupPath = null;
 
 	/**
 	 * @var LoggerInterface
 	 */
 	private $logger;
 
-
 	/**
-	 * @var array
-	 */
-	protected $defaultItem = [
-        'compressor' => '',
-		'ignoreFailedRead' => false,
-        'path' => '',
-		'include' => [],
-        'exclude' => []
-	];
-
-
-	/**
-	 * BackupStartCommand constructor.
-	 * @param array $config
+	 * StartCommand constructor.
+	 *
 	 * @param LoggerInterface $logger
-	 * @param string|null $name
+	 * @param string|null     $name
 	 */
-	public function __construct(array $config, LoggerInterface $logger, string $name = null)
+	public function __construct(LoggerInterface $logger, string $name = null)
 	{
 		$this->logger = $logger;
-		$this->config = $config;
-		$this->backupPath = BACKUP_PATH;
-
 		parent::__construct($name);
 	}
 
@@ -65,7 +40,7 @@ class StartCommand extends Command
 	{
 		$this
 			->setName('app:start')
-			->setDescription('Запускает резавное копирование и загрузку файлов на внешние источники
+			->setDescription('Запускает резевное копирование и загрузку файлов на внешние источники
 ')
 		;
 	}
