@@ -40,8 +40,7 @@ class StartCommand extends Command
 	{
 		$this
 			->setName('app:start')
-			->setDescription('Запускает резевное копирование и загрузку файлов на внешние источники
-')
+			->setDescription('Запускает резевное копирование и загрузку файлов на внешние источники')
 		;
 	}
 
