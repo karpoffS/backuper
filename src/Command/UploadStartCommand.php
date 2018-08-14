@@ -84,7 +84,6 @@ class UploadStartCommand extends Command
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
 
-		dump($this->config);
 		$io = new SymfonyStyle($input, $output);
 		try {
 			if($connections = $this->config['connections']){
@@ -92,7 +91,6 @@ class UploadStartCommand extends Command
 				$exchange = new ExchangeData(CACHE_PATH);
 
 				$uploadFiles = $exchange->getUploadFiles();
-				dump($uploadFiles);
 
 				foreach ($connections as $name=>$conn){
 					$setting = $this->getConnectionSetting($conn);
@@ -124,10 +122,6 @@ class UploadStartCommand extends Command
 									foreach ($contents as $content){
 										if($content['type'] === 'file'){
 											if(preg_match('/('.implode('|',$this->backupItems).')/i', $content['basename'])){                      $comparator = new Comparators\DateComparator($setting['cleanBackups']);
-												dump(date(\DateTime::ATOM, $filesystem->getTimestamp($content['path']))) ;
-												dump(date(\DateTime::ATOM, (int) $comparator->getTarget())) ;
-//												dump((int) $comparator->getTarget()) ;
-												dump($filesystem->getTimestamp($content['path']) < (int) $comparator->getTarget());
 												if($filesystem->getTimestamp($content['path']) < (int) $comparator->getTarget()){
 													try{
 														if($filesystem->delete($content['path'])){
