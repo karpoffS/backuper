@@ -282,6 +282,8 @@ class BackupStartCommand extends Command
 	private function runExternalCommand(string $command, array $context)
 	{
 		$context = implode('', array_map(function ($s){return '['.$s.']';}, $context));
+		// Запись в лог
+		$this->logger->info($context.': '.$command);
 		$process = new Process($command);
 		$process->setTimeout(null);
 		$process->run(function ($type, $buffer) use($context) {
