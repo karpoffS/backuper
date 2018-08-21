@@ -240,7 +240,7 @@ class BackupStartCommand extends Command
 						// Результат работы в лог
 						$this->logger->emergency(
 							sprintf(
-								'Зарезервировано файлов %d шт. в %d директориях.',
+								'Reserve copy files %d pcs. in %d directories.',
 								$stats['files'],
 								$stats['folders']
 							)
