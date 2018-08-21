@@ -79,7 +79,7 @@ class ExchangeData
 
 	public function clearUploadedFilesAndSave()
 	{
-		$this->data[self::KEY_CURRENT] = [];
+		$this->moveCurrentToPreviousData();
 		return $this->saveData();
 	}
 
@@ -89,12 +89,17 @@ class ExchangeData
 	public function saveData()
 	{
 		if(count($this->current) > 0){
-			$this->data[self::KEY_PREVIOUS] = array_merge(
-				$this->data[self::KEY_CURRENT],
-				$this->data[self::KEY_PREVIOUS]
-			) ;
-			$this->data[self::KEY_CURRENT] = $this->current;
+			$this->moveCurrentToPreviousData();
 		}
 		return file_put_contents($this->filedb, json_encode($this->data, JSON_PRETTY_PRINT) );
+	}
+
+	private function moveCurrentToPreviousData()
+	{
+		$this->data[self::KEY_PREVIOUS] = array_merge(
+			$this->data[self::KEY_CURRENT],
+			$this->data[self::KEY_PREVIOUS]
+		);
+		$this->data[self::KEY_CURRENT] = $this->current;
 	}
 }
