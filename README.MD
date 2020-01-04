@@ -21,7 +21,7 @@ sudo mkdir /backups
 
 Установка комплекта ПО производится стандартными средствами **GIT**.
 ```bash
-git clone http://url_to/backuper.git
+git clone https://github.com/karpoffS/backuper.git
 ```
 
 * Настройка производится в двух файлах `.env` и `config.yaml`.
